@@ -1,27 +1,18 @@
 import {createSlice} from '@reduxjs/toolkit';
-import {AppState} from 'model/reducers/types';
 
-const initialState: AppState = {
-  currentRouteName: '',
-  isDark: false,
-  message: {},
-};
-export const appSlice = createSlice({
+export const mapPinSlice = createSlice({
   name: 'pins',
-  initialState,
+  initialState: [],
   reducers: {
-    addPin: (state: AppState, action) => {
-      return {
-        ...state,
-        pin: action.payload,
-      };
+    addPin: (state, action) => {
+      state.push(action.payload);
     },
-   
-  
+    removePin: (state, action) => {
+      return state.filter((_, index) => index !== action.payload);
+    },
   },
 });
 
-export const {addPin} =
-mapPinSlice.actions;
+export const {addPin, removePin} = mapPinSlice.actions;
 
 export default mapPinSlice.reducer;

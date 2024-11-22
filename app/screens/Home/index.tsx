@@ -1,30 +1,31 @@
 // src/screens/MapScreen.js
 import React, {useCallback} from 'react';
-import {View, Text, FlatList, StyleSheet} from 'react-native';
+import {View, Text, FlatList, StyleSheet, Button} from 'react-native';
 import MapView, {
   Marker,
   PROVIDER_GOOGLE,
   MapViewProps,
 } from 'react-native-maps';
-import {addPin} from '../../store/slice/mapPinSlice';
+import {addPin, removePin} from '../../store/slice/mapPinSlice';
 import {useDispatch, useSelector} from 'react-redux';
 import {latlongIntoAddress} from '../../component/latlongIntoAddress';
+import {useStyles} from './styles';
 
 const MapScreen = () => {
   const mapRef = React.createRef<MapViewProps>();
-
+  const styles = useStyles();
   const dispatch = useDispatch();
   const pins = useSelector(state => state.pins);
-
+  console.log('pins', pins);
   const handleMapPress = useCallback(async event => {
     const {latitude, longitude} = event.nativeEvent.coordinate;
     const latlong = {
       latitude,
       longitude,
     };
-    const placeName = await latlongIntoAddress(latlong);
-
-    dispatch(addPin({latitude, longitude}));
+    const cityName = await latlongIntoAddress(latlong);
+    console.log('placeName', cityName?.city);
+    dispatch(addPin({latitude, longitude, city: cityName?.city}));
   }, []);
 
   return (
@@ -52,23 +53,22 @@ const MapScreen = () => {
         <FlatList
           data={pins}
           keyExtractor={(item, index) => index.toString()}
-          renderItem={({item}) => (
-            <Text style={styles.item}>
-              Latitude: {item.latitude}, Longitude: {item.longitude}
-            </Text>
+          contentContainerStyle={{marginTop: 4}}
+          renderItem={({item, index}) => (
+            <View style={{backgroundColor: 'lightgrey', padding: 6}}>
+              <Text style={styles.item}>
+                {item.city} (Lat: {item.latitude}, Lng: {item.longitude})
+              </Text>
+              <Button
+                title="Remove"
+                onPress={() => dispatch(removePin(index))}
+              />
+            </View>
           )}
         />
       </View>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {flex: 1},
-  map: {flex: 2},
-  listContainer: {flex: 1, padding: 10},
-  header: {fontWeight: 'bold', fontSize: 16, marginBottom: 10},
-  item: {fontSize: 14, marginBottom: 5},
-});
 
 export default MapScreen;
